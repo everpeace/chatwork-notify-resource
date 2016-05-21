@@ -1,0 +1,12 @@
+{
+  "params": {
+    "api_token": "ax32__DUMMY__42",
+    "room": "1_DUMMY_3",
+    "text_file": "sample.txt",
+    "text": "SomeTestResult\n$TEXT_FILE_CONTENT\n",
+    "debug": "true"
+  },
+  "source": {
+    "url": "https://api.chatwork.com/v1"
+  }
+}
