@@ -1,0 +1,62 @@
+#!/bin/bash
+
+set -e
+
+cd "${1}"
+
+exec 3>&1
+exec 1>&2
+
+# for jq
+PATH=/usr/local/bin:$PATH
+
+payload=$(mktemp /tmp/resource-in.XXXXXX)
+
+cat > "${payload}" <&0
+
+API_ENDPOINT="$(jq -r '(.source.api_endpoint // "https://api.chatwork.com/v1")' < "${payload}")"
+api_token="$(jq -r '(.params.api_token // null)' < "${payload}")"
+room="$(jq -r '(.params.room // null)' < "${payload}")"
+text_file="$(jq -r '.params.text_file // ""' < "${payload}")"
+text="$(jq '(.params.text // "${TEXT_FILE_CONTENT}")' < "${payload}")"
+always_notify="$(jq -r '.params.always_notify // "false"' < "${payload}")"
+
+debug="$(jq -r '.params.debug // "false"' < "${payload}")"
+silent="$(jq -r '.params.silent // "false"' < "${payload}")"
+
+
+
+TEXT_FILE_CONTENT=""
+[[ -n "${text_file}" && -f "${text_file}" ]] && TEXT_FILE_CONTENT="$(cat "${text_file}")"
+
+if [[ "$always_notify" == "true" || -n "$TEXT_FILE_CONTENT" || -z "$text_file" ]]
+then
+  TEXT_FILE_CONTENT="${TEXT_FILE_CONTENT:-_(no notification provided)_}"
+
+  text="$(eval printf ${text} )"
+  [[ -z "${text}" ]] && text="_(missing notification text)_"
+
+  body="${text}"
+  post_url="${API_ENDPOINT}/rooms/${room}/messages"
+
+  if [[ "$debug" == "true" ]]
+  then
+    echo "endpoint = ${post_url}"
+    echo "body = ${body}"
+    exit 0
+  elif [[ "$silent" == "true" ]]
+  then
+    echo "Using silent output"
+    curl -s -X POST \
+      -H "X-ChatWorkToken: ${api_token}" \
+      -d "body=${body}" \
+      "${post_url}"
+  else
+    curl -v -X POST \
+      -H "X-ChatWorkToken: ${api_token}" \
+      -d "body=${body}" \
+      "${post_url}"
+  fi
+fi
+
+jq -n "{version:{timestamp:\"$(date +%s)\"}}" >&3
