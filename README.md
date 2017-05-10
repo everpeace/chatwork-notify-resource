@@ -18,7 +18,7 @@ resources:
   - name: chatwork-notification
     type: chatwork-notify-resource
     source:
-      api_endpoint: https://api.chatwork.com/v1
+      api_endpoint: https://api.chatwork.com/v2
 
 jobs:
   - name: test-chatwork-notify

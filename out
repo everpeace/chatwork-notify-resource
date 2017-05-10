@@ -14,7 +14,7 @@ payload=$(mktemp /tmp/resource-in.XXXXXX)
 
 cat > "${payload}" <&0
 
-API_ENDPOINT="$(jq -r '(.source.api_endpoint // "https://api.chatwork.com/v1")' < "${payload}")"
+API_ENDPOINT="$(jq -r '(.source.api_endpoint // "https://api.chatwork.com/v2")' < "${payload}")"
 api_token="$(jq -r '(.params.api_token // null)' < "${payload}")"
 room="$(jq -r '(.params.room // null)' < "${payload}")"
 text_file="$(jq -r '.params.text_file // ""' < "${payload}")"
